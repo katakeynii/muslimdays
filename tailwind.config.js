@@ -1,10 +1,19 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./App.{js,ts,tsx}', './components/**/*.{js,ts,tsx}'],
-
+  content: [
+    './App.{js,ts,tsx}',
+    './components/**/*.{js,ts,tsx}',
+    './app/**/*.{js,ts,tsx}',
+    './screens/**/*.{js,ts,tsx}',
+    './services/**/*.{js,ts,tsx}',
+    './utils/**/*.{js,ts,tsx}'
+  ],
   presets: [require('nativewind/preset')],
   theme: {
     extend: {},
   },
   plugins: [],
+  corePlugins: {
+    preflight: false,
+  },
 };

@@ -3,36 +3,54 @@
     "name": "MuslimDay",
     "slug": "MuslimDay",
     "version": "1.0.0",
-
+    "description": "Application mobile pour les heures de prière musulmanes",
+    "primaryColor": "#3B82F6",
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
     },
-
     "experiments": {
       "tsconfigPaths": true
     },
-
-    "plugins": [],
-
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "L'application MuslimDay utilise votre localisation pour calculer les heures de prière précises pour votre position géographique.",
+          "locationAlwaysPermission": "L'application MuslimDay utilise votre localisation pour calculer les heures de prière précises pour votre position géographique.",
+          "locationWhenInUsePermission": "L'application MuslimDay utilise votre localisation pour calculer les heures de prière précises pour votre position géographique.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ]
+    ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-
     "userInterfaceStyle": "light",
-
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#3B82F6"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "L'application MuslimDay utilise votre localisation pour calculer les heures de prière précises pour votre position géographique.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "L'application MuslimDay utilise votre localisation pour calculer les heures de prière précises pour votre position géographique."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#3B82F6"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     }
   }
 }

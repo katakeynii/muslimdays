@@ -1,0 +1,644 @@
+{
+  "database": "youinc_supabase",
+  "version": "1.0.0",
+  "modules": {
+    "blog": {
+      "name": "Blog YouInc",
+      "tables": [
+        {
+          "name": "profiles",
+          "description": "Profils utilisateurs (étend auth.users)",
+          "columns": [
+            {
+              "name": "id",
+              "type": "UUID",
+              "primary_key": true,
+              "references": "auth.users(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "email",
+              "type": "TEXT",
+              "nullable": true
+            },
+            {
+              "name": "full_name",
+              "type": "TEXT",
+              "nullable": true
+            },
+            {
+              "name": "avatar_url",
+              "type": "TEXT",
+              "nullable": true
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()"
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()",
+              "auto_update": true
+            }
+          ],
+          "indexes": ["id"],
+          "relationships": {
+            "one_to_many": ["posts", "comments", "comment_likes", "subscriptions", "missions", "actions"]
+          }
+        },
+        {
+          "name": "posts",
+          "description": "Articles de blog",
+          "columns": [
+            {
+              "name": "id",
+              "type": "UUID",
+              "primary_key": true,
+              "default": "uuid_generate_v4()"
+            },
+            {
+              "name": "author_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "profiles(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "title",
+              "type": "TEXT",
+              "not_null": true
+            },
+            {
+              "name": "slug",
+              "type": "TEXT",
+              "not_null": true,
+              "unique": true
+            },
+            {
+              "name": "excerpt",
+              "type": "TEXT",
+              "nullable": true
+            },
+            {
+              "name": "content",
+              "type": "TEXT",
+              "not_null": true
+            },
+            {
+              "name": "cover_url",
+              "type": "TEXT",
+              "nullable": true
+            },
+            {
+              "name": "published_at",
+              "type": "TIMESTAMPTZ",
+              "nullable": true,
+              "description": "NULL = brouillon"
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()"
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()",
+              "auto_update": true
+            }
+          ],
+          "indexes": ["author_id", "published_at", "slug"],
+          "relationships": {
+            "many_to_one": ["profiles"],
+            "one_to_many": ["comments"]
+          }
+        },
+        {
+          "name": "comments",
+          "description": "Commentaires sur les articles",
+          "columns": [
+            {
+              "name": "id",
+              "type": "UUID",
+              "primary_key": true,
+              "default": "uuid_generate_v4()"
+            },
+            {
+              "name": "post_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "posts(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "author_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "profiles(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "content",
+              "type": "TEXT",
+              "not_null": true
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()"
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()",
+              "auto_update": true
+            }
+          ],
+          "indexes": ["post_id", "author_id"],
+          "relationships": {
+            "many_to_one": ["posts", "profiles"],
+            "one_to_many": ["comment_likes"]
+          }
+        },
+        {
+          "name": "comment_likes",
+          "description": "Likes sur les commentaires",
+          "columns": [
+            {
+              "name": "id",
+              "type": "UUID",
+              "primary_key": true,
+              "default": "uuid_generate_v4()"
+            },
+            {
+              "name": "comment_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "comments(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "user_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "profiles(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()"
+            }
+          ],
+          "indexes": ["comment_id", "user_id"],
+          "unique_constraints": [["comment_id", "user_id"]],
+          "relationships": {
+            "many_to_one": ["comments", "profiles"]
+          }
+        },
+        {
+          "name": "subscriptions",
+          "description": "Abonnements newsletter",
+          "columns": [
+            {
+              "name": "id",
+              "type": "UUID",
+              "primary_key": true,
+              "default": "uuid_generate_v4()"
+            },
+            {
+              "name": "email",
+              "type": "TEXT",
+              "not_null": true,
+              "unique": true
+            },
+            {
+              "name": "user_id",
+              "type": "UUID",
+              "nullable": true,
+              "references": "profiles(id)",
+              "on_delete": "SET NULL"
+            },
+            {
+              "name": "subscribed_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()"
+            },
+            {
+              "name": "active",
+              "type": "BOOLEAN",
+              "default": true
+            }
+          ],
+          "indexes": ["email", "user_id"],
+          "relationships": {
+            "many_to_one": ["profiles"]
+          }
+        }
+      ]
+    },
+    "life_system": {
+      "name": "MuslimDay Life System",
+      "tables": [
+        {
+          "name": "missions",
+          "description": "Missions utilisateur",
+          "columns": [
+            {
+              "name": "id",
+              "type": "UUID",
+              "primary_key": true,
+              "default": "uuid_generate_v4()"
+            },
+            {
+              "name": "user_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "profiles(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "title",
+              "type": "TEXT",
+              "not_null": true
+            },
+            {
+              "name": "description",
+              "type": "TEXT",
+              "nullable": true
+            },
+            {
+              "name": "success_vision",
+              "type": "TEXT",
+              "nullable": true
+            },
+            {
+              "name": "active",
+              "type": "BOOLEAN",
+              "default": true
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()"
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()",
+              "auto_update": true
+            }
+          ],
+          "indexes": ["user_id", "active"],
+          "relationships": {
+            "many_to_one": ["profiles"],
+            "one_to_many": ["objectives"]
+          }
+        },
+        {
+          "name": "objectives",
+          "description": "Objectifs associés aux missions",
+          "columns": [
+            {
+              "name": "id",
+              "type": "UUID",
+              "primary_key": true,
+              "default": "uuid_generate_v4()"
+            },
+            {
+              "name": "mission_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "missions(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "title",
+              "type": "TEXT",
+              "not_null": true
+            },
+            {
+              "name": "description",
+              "type": "TEXT",
+              "nullable": true
+            },
+            {
+              "name": "term_type",
+              "type": "TEXT",
+              "not_null": true,
+              "check": ["court", "moyen", "long"]
+            },
+            {
+              "name": "deadline",
+              "type": "TIMESTAMPTZ",
+              "nullable": true
+            },
+            {
+              "name": "success_criteria",
+              "type": "JSONB",
+              "nullable": true
+            },
+            {
+              "name": "active",
+              "type": "BOOLEAN",
+              "default": false
+            },
+            {
+              "name": "completed",
+              "type": "BOOLEAN",
+              "default": false,
+              "auto_calculated": true
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()"
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()",
+              "auto_update": true
+            }
+          ],
+          "indexes": ["mission_id", "active", "completed"],
+          "relationships": {
+            "many_to_one": ["missions"],
+            "one_to_many": ["key_results", "actions"]
+          }
+        },
+        {
+          "name": "key_results",
+          "description": "Résultats clés (Key Results) associés aux objectifs",
+          "columns": [
+            {
+              "name": "id",
+              "type": "UUID",
+              "primary_key": true,
+              "default": "uuid_generate_v4()"
+            },
+            {
+              "name": "objective_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "objectives(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "title",
+              "type": "TEXT",
+              "not_null": true
+            },
+            {
+              "name": "description",
+              "type": "TEXT",
+              "nullable": true
+            },
+            {
+              "name": "target_value",
+              "type": "NUMERIC",
+              "not_null": true
+            },
+            {
+              "name": "current_value",
+              "type": "NUMERIC",
+              "default": 0,
+              "auto_calculated": true
+            },
+            {
+              "name": "start_date",
+              "type": "DATE",
+              "not_null": true
+            },
+            {
+              "name": "end_date",
+              "type": "DATE",
+              "not_null": true
+            },
+            {
+              "name": "kr_type",
+              "type": "TEXT",
+              "not_null": true,
+              "check": ["completion_rate", "streak"]
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()"
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()",
+              "auto_update": true
+            }
+          ],
+          "indexes": ["objective_id"],
+          "relationships": {
+            "many_to_one": ["objectives"],
+            "many_to_many": ["actions"]
+          }
+        },
+        {
+          "name": "actions",
+          "description": "Actions utilisateur",
+          "columns": [
+            {
+              "name": "id",
+              "type": "UUID",
+              "primary_key": true,
+              "default": "uuid_generate_v4()"
+            },
+            {
+              "name": "user_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "profiles(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "objective_id",
+              "type": "UUID",
+              "nullable": true,
+              "references": "objectives(id)",
+              "on_delete": "SET NULL"
+            },
+            {
+              "name": "title",
+              "type": "TEXT",
+              "not_null": true
+            },
+            {
+              "name": "date",
+              "type": "DATE",
+              "nullable": true
+            },
+            {
+              "name": "start_time",
+              "type": "TIME",
+              "nullable": true
+            },
+            {
+              "name": "duration",
+              "type": "INTEGER",
+              "nullable": true,
+              "description": "Durée en minutes"
+            },
+            {
+              "name": "recurrence",
+              "type": "TEXT",
+              "default": "none",
+              "check": ["none", "daily", "weekly", "monthly", "yearly"]
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()"
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()",
+              "auto_update": true
+            }
+          ],
+          "indexes": ["user_id", "objective_id", "date"],
+          "relationships": {
+            "many_to_one": ["profiles", "objectives"],
+            "many_to_many": ["key_results"],
+            "one_to_many": ["occurrences"]
+          }
+        },
+        {
+          "name": "action_key_results",
+          "description": "Liaison many-to-many entre actions et résultats clés",
+          "columns": [
+            {
+              "name": "id",
+              "type": "UUID",
+              "primary_key": true,
+              "default": "uuid_generate_v4()"
+            },
+            {
+              "name": "action_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "actions(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "key_result_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "key_results(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()"
+            }
+          ],
+          "indexes": ["action_id", "key_result_id"],
+          "unique_constraints": [["action_id", "key_result_id"]],
+          "relationships": {
+            "many_to_one": ["actions", "key_results"]
+          }
+        },
+        {
+          "name": "occurrences",
+          "description": "Occurrences pour les actions récurrentes",
+          "columns": [
+            {
+              "name": "id",
+              "type": "UUID",
+              "primary_key": true,
+              "default": "uuid_generate_v4()"
+            },
+            {
+              "name": "action_id",
+              "type": "UUID",
+              "not_null": true,
+              "references": "actions(id)",
+              "on_delete": "CASCADE"
+            },
+            {
+              "name": "date",
+              "type": "DATE",
+              "not_null": true
+            },
+            {
+              "name": "status",
+              "type": "TEXT",
+              "default": "pending",
+              "check": ["pending", "completed"]
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()"
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMPTZ",
+              "default": "NOW()",
+              "auto_update": true
+            }
+          ],
+          "indexes": ["action_id", "date", "status"],
+          "unique_constraints": [["action_id", "date"]],
+          "relationships": {
+            "many_to_one": ["actions"]
+          }
+        }
+      ]
+    }
+  },
+  "rls_enabled": true,
+  "triggers": [
+    {
+      "name": "on_auth_user_created",
+      "description": "Crée automatiquement un profil à l'inscription",
+      "table": "auth.users",
+      "function": "handle_new_user()"
+    },
+    {
+      "name": "update_*_updated_at",
+      "description": "Met à jour automatiquement updated_at",
+      "tables": ["profiles", "posts", "comments", "missions", "objectives", "key_results", "actions", "occurrences"]
+    },
+    {
+      "name": "update_kr_on_occurrence_change",
+      "description": "Met à jour current_value des Key Results",
+      "table": "occurrences"
+    },
+    {
+      "name": "update_objective_on_kr_change",
+      "description": "Met à jour completed des objectifs",
+      "table": "key_results"
+    }
+  ],
+  "functions": [
+    {
+      "name": "calculate_completion_rate",
+      "description": "Calcule le taux de complétion pour un Key Result",
+      "parameters": ["kr_id UUID"],
+      "returns": "NUMERIC"
+    },
+    {
+      "name": "calculate_streak",
+      "description": "Calcule la série de jours consécutifs",
+      "parameters": ["kr_id UUID"],
+      "returns": "INTEGER"
+    },
+    {
+      "name": "check_objective_completion",
+      "description": "Vérifie si un objectif est complété",
+      "parameters": ["obj_id UUID"],
+      "returns": "BOOLEAN"
+    }
+  ]
+}
+
